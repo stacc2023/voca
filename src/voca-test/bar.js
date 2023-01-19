@@ -1,0 +1,37 @@
+import { useState, useEffect } from "react";
+
+export default function Bar(props) {
+    const [val, setVal] = useState(props.val || 0); 
+    const [remains, setRemains] = useState(0);
+    const {stop} = props;
+
+    useEffect(() => {
+        let requestId;
+        const start = Date.now();
+        let newVal = 0;
+        const func = () => {
+            newVal = remains + Date.now() - start;
+            if (newVal < (props.max || 1000)) {
+                setVal(newVal);
+                requestId = requestAnimationFrame(func)
+            } else {
+                setVal(props.max || 1000);
+                props.callback && props.callback();
+            }
+        }
+
+        if (!val || (remains && !stop)) {
+            requestId = requestAnimationFrame(func);            
+        }
+
+        // 언마운트, 애니메이션 종료
+        return () => {
+            setRemains(newVal);
+            cancelAnimationFrame(requestId)
+        }
+    }, [stop])
+
+    return <div className="container">
+        <div className="value" style={{width: (val / (props.max || 1000)) * 100 + "%"}}></div>
+    </div>
+}
