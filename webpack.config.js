@@ -39,12 +39,21 @@ module.exports = {
         test: /\.scss$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
+          {
+            loader:'css-loader',
+            options: {
+              modules: {
+                auto: true,
+                localIdentName: '[local]__[hash:base64:5]',
+              },
+            },
+          },
           'sass-loader'
         ],
         exclude: /node_modules/
       }
     ]
   },
-  mode: 'development'
+  mode: 'development',
+  // mode: 'production'
 };

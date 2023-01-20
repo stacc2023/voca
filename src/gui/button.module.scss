@@ -1,0 +1,28 @@
+.frame {
+    position: absolute;
+    button {
+        border: 1px solid white;
+        margin:0;
+        color: white;
+        font-size: 20px;
+        background-color: transparent;
+        &:disabled { color: #777; }
+    }
+    &.top { top: -35px; }
+    &.bottom { bottom: -35px; }
+    &.left {
+        left: 0;
+        button { margin-right: 5px; }
+    }
+    &.right {
+        right: 0;
+        button { margin-left: 5px; }
+    }
+    &.center {
+        display: flex;
+        gap: 5px;
+        left: 0;
+        width: 100%;
+        button { flex: 1; }
+    }
+}

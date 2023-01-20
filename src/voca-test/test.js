@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import Bar from './bar';
+import Bar from '../gui/bar';
+import ButtonFrame from '../gui/button';
 import './test.scss';
 
 const CHECK_INDEX = 0;
@@ -73,48 +74,48 @@ export default function Test(props) {
                 }
             }} />
         <div>
-            <span>{config.words.length}</span>
-            /
             <span>{config.index+1}</span>
             /
+            <span>{config.words.length}</span>
+            |
             <span style={{color: 'green'}}>{yes}</span>
-            /
+            :
             <span style={{color: 'red'}}>{no}</span>
         </div>
+        <div className='arrow'>
+            <button onClick={backward}>{'<'}</button>
+            <button onClick={forward}>{'>'}</button>
+        </div>
         <div className="content">      
-            <div className='arrow'>
-                <button onClick={backward}>{'<'}</button>
-                <button onClick={forward}>{'>'}</button>
-            </div>
             <div className='word' style={{color: config.words[config.index][CHECK_INDEX] == 'TRUE' ? 'green' : 'red'}}>
                 {config.words[config.index][config.cursor]}
             </div>
-            {config.cursor == WORD_INDEX ?(<>
-                <div className='check'>
-                    <button onClick={check('TRUE')}>yes</button>
-                    <button onClick={check('FALSE')}>no</button>
-                </div>
-            </>): null}
-            <div className='control'>
-                <button className='stop' onClick={e => {
-                    setConfig({ ...config, stop: !config.stop });
-                }}>{config.stop ? '시작' : '정지'}</button>
-                <button className='save' onClick={e => {
-                    e.target.disabled=true;
-                    setConfig({ ...config, stop: true });
-                    fetch('/erase', {
-                        method: 'POST',
-                        body: JSON.stringify(config),
-                    }).then(res => res.json()).then(result => {
-                        setConfig({ ...config, stop: false });
-                        e.target.disabled=false;
-                    });
-                }}>저장</button>
-                <button className='exit' onClick={e => {
-                    setConfig({...config, status:0});
-                }}>종료</button>
-            </div>
         </div>
+        {config.cursor == WORD_INDEX ?(
+            <ButtonFrame className="bottom center">
+                <button onClick={check('TRUE')} style={{color: 'rgb(0,255,0)'}}>정답</button>
+                <button onClick={check('FALSE')} style={{color: 'rgb(255, 50, 50)'}}>오답</button>
+            </ButtonFrame>
+        ): null}
+        <ButtonFrame className="top right">
+            <button onClick={e => {
+                setConfig({ ...config, stop: !config.stop });
+            }}>{config.stop ? '시작' : '정지'}</button>
+            <button onClick={e => {
+                e.target.disabled=true;
+                setConfig({ ...config, stop: true });
+                fetch('/erase', {
+                    method: 'POST',
+                    body: JSON.stringify(config),
+                }).then(res => res.json()).then(result => {
+                    setConfig({ ...config, stop: false });
+                    e.target.disabled=false;
+                });
+            }}>저장</button>
+            <button onClick={e => {
+                setConfig({...config, status:0});
+            }}>종료</button>
+        </ButtonFrame>
     </div>)
 
 }

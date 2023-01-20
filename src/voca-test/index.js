@@ -2,6 +2,7 @@ import './index.scss';
 import Form from './form';
 import Test from './test';
 import { useState, useEffect } from 'react';
+import Mask from '../gui/mask';
 
 const WORD_INDEX = 1;
 
@@ -24,20 +25,16 @@ export default function Window(props) {
 
     // config가 null 인 경우 설정 창
     if (!config.status) {
-        return <div className='background'>
-            <div className='window'>
-                <Form 
-                    setSheet={props.setSheet}
-                    config={config}
-                    setConfig={setConfig} />
-            </div>
-        </div>
+        return <Mask>
+            <Form 
+                setSheet={props.setSheet}
+                config={config}
+                setConfig={setConfig} />
+        </Mask>
     // 테스트 창
     } else {
-        return <div className="background">
-            <div className="window">
-                <Test config={config} setConfig={setConfig} />
-            </div>
-        </div>
+        return <Mask>
+            <Test config={config} setConfig={setConfig} />
+        </Mask>
     }
 }

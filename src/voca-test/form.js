@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import ButtonFrame from '../gui/button';
 import './form.scss';
 
 const CHECK_INDEX = 0;
@@ -45,8 +46,9 @@ export default function Form(props) {
                 </tr>
             </tbody>
         </table>
-        <div className="controls">
-            <button onClick={() => {
+        <ButtonFrame className="right bottom">
+            <button onClick={e => {
+                e.target.disabled = true;
                 fetch('/words', {
                     method: 'POST',
                     body: JSON.stringify({ start, end, sheet: config.sheet }),
@@ -61,14 +63,20 @@ export default function Form(props) {
                     setConfig({...config, start, end, words, data, status: 1, index: 0, cursor: WORD_INDEX, stop: false });
                 });
             }}>시작</button>
-            <button onClick={() => {
+            <button onClick={e => {
+                /**
+                 * start end 값에 따라 오류 발생
+                 */
+                e.target.disabled = true;
                 fetch('/reset', {
                     method: 'POST',
                     body: JSON.stringify({ start, end, sheet:config.sheet }),
-                });
+                }).then(res => res.json()).then(data => e.target.disabled = false);
             }}>초기화</button>
             <button disabled={!config.words ? true : false} onClick={e => setConfig({ ...config, status: 1 })}>불러오기</button>
-        </div>
-        <button className="exit" onClick={e => setSheet(null)}>종료</button>
+        </ButtonFrame>
+        <ButtonFrame className="top right">
+            <button onClick={e => setSheet(null)}>종료</button>
+        </ButtonFrame>
     </div>)
 }

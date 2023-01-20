@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom/client';
 import { useState, useEffect } from 'react';
 import Test from './voca-test';
+import './index.scss';
 
 function App() {
     const [sheets, setSheets] = useState([]);
@@ -13,7 +14,7 @@ function App() {
     }, [])
 
     if (!sheet) {
-        return (<div>
+        return (<div className='container'>
             <div className='title'>단어장 목록</div>
             <ul className="sheet-list">
                 {sheets.map(sheet => <li 

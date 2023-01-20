@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from './bar.module.scss';
 
 export default function Bar(props) {
     const [val, setVal] = useState(props.val || 0); 
@@ -31,7 +32,7 @@ export default function Bar(props) {
         }
     }, [stop])
 
-    return <div className="container">
-        <div className="value" style={{width: (val / (props.max || 1000)) * 100 + "%"}}></div>
+    return <div className={styles.container}>
+        <div className={styles.value} style={{width: (val / (props.max || 1000)) * 100 + "%"}}></div>
     </div>
 }
