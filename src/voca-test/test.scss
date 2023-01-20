@@ -71,11 +71,15 @@
             position: absolute;
             top: -35px;
             right: 0;
-            .exit, .stop {
+            button {
                 border:1px solid white;
                 background-color: transparent;
                 font-size: 20px;
                 color: white;
+                margin-left: 5px;
+                &:disabled {
+                    color: #777;
+                }
             }
         }
     }

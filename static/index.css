@@ -13,9 +13,9 @@
 .window {
   position: fixed;
   left: calc(10%);
-  top: calc(15%);
+  top: calc(20%);
   width: 80%;
-  height: 70%;
+  height: 60%;
   background-color: white;
   user-select: none; }
 
@@ -56,6 +56,17 @@ input[type=number] {
     color: white;
     font-size: 20px;
     margin: 0; }
+  .form .controls {
+    position: absolute;
+    bottom: -35px;
+    right: 0em; }
+    .form .controls button {
+      color: white;
+      font-size: 20px;
+      border: 1px solid white;
+      background-color: transparent;
+      margin: 0;
+      margin-left: 5px; }
 
 /*!******************************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/voca-test/test.scss ***!
@@ -119,11 +130,14 @@ input[type=number] {
       position: absolute;
       top: -35px;
       right: 0; }
-      .test .content .control .exit, .test .content .control .stop {
+      .test .content .control button {
         border: 1px solid white;
         background-color: transparent;
         font-size: 20px;
-        color: white; }
+        color: white;
+        margin-left: 5px; }
+        .test .content .control button:disabled {
+          color: #777; }
 
 /*!*********************************************************************************************************!*\
   !*** css ./node_modules/css-loader/dist/cjs.js!./node_modules/sass-loader/dist/cjs.js!./src/index.scss ***!

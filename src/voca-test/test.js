@@ -8,35 +8,40 @@ const MEAN_INDEX = 2;
 
 
 export default function Test(props) {
-    const {config, index, setConfig, setIndex} = props;
-    const [stop, setStop] = useState(0);
+    const {config, setConfig} = props;
+    const [stop, setStop] = useState(false);
 
+    // yes | no 버튼 누르면, config.words(config.data와 연동)의 데이터 변경 후 뜻 보여주기
+    // config.stop = false
     const check = ans => e => {
-        config.words[index[0]][CHECK_INDEX] = ans;
-        setIndex([index[0], MEAN_INDEX]);
+        config.words[config.index][CHECK_INDEX] = ans;
+        setConfig({ ...config, cursor: MEAN_INDEX, stop:false });
     }
+    // 뒤로가기 버튼 누르면, 현재 커서가 뜻인 경우 해당 단어를 보여주고 단어인 경우 이전 단어
+    // config.stop = false
     const backward = (e) => {
-        if (index[1] == MEAN_INDEX) {
-            setIndex([index[0], WORD_INDEX]);
-        } else if (index[0] > 0) {
-            setIndex([index[0] - 1, WORD_INDEX]);
+        if (config.cursor == MEAN_INDEX) {
+            setConfig({ ...config, cursor: WORD_INDEX, stop: false });
+        } else if (config.index > 0) {
+            setConfig({ ...config, index: config.index - 1, stop: false })
         }
     }
+    // 앞으로 가기 버튼 누르면 커서에 상관 없이 다음 단어
+    // config.stop = false
     const forward = e => {
-        if (index[0] < config.words.length - 1) {
-            setIndex([index[0] + 1, WORD_INDEX]);
+        if (config.index < config.words.length - 1) {
+            setConfig({ ...config, index: config.index + 1, cursor: WORD_INDEX, stop:false });
         }
     }
+    // config.repeat가 0이 아닌 경우 이전 단어 묶음을 모두 맞췄는지에 따라 반복 여부 결정
     const passable = () => {
-        for (let i = index[0] - config.repeat + 1; i <= index[0]; i++) {
+        for (let i = config.index - config.repeat + 1; i <= config.index; i++) {
             if (config.words[i][CHECK_INDEX] == 'FALSE') return false
         }
         return true
     }
-    const save = () => {
 
-    }
-
+    // 맞은 개수와 틀린 개수 표기하기 위한 계산
     let yes = 0;
     let no = 0;
     for (let row of config.words) {
@@ -44,28 +49,33 @@ export default function Test(props) {
         else no++;
     }
 
-
     return (<div className="test">
         <Bar 
-            key={'' + index[0] + index[1] + 'num'} 
-            val={index[0] + 1} 
+            key={'' + config.index + config.cursor + 'num'} 
+            val={config.index + 1} 
             max={config.words.length} />
         <Bar 
-            key={'' + index[0] + index[1] + 'dur'} 
-            max={index[1] == MEAN_INDEX ? 1000 : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
-            stop={stop}
+            key={'' + config.index + config.cursor + 'dur'} 
+            max={config.cursor == MEAN_INDEX ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
+            stop={config.stop}
             callback={() => {
                 // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
-                if (index[1] == MEAN_INDEX) {
-                    if (config.repeat != 0 && index[0] % config.repeat == config.repeat - 1 && !passable()) setIndex([index[0] - config.repeat + 1, WORD_INDEX]);
-                    else if (index[0] < config.words.length - 1) setIndex([index[0] + 1, WORD_INDEX]);
+                if (config.cursor == MEAN_INDEX) {
+                    if (config.repeat != 0 && config.index % config.repeat == config.repeat - 1 && !passable()) {
+                        setConfig({ ...config, index: config.index - config.repeat + 1, cursor: WORD_INDEX });
+                    }
+                    else if (config.index < config.words.length - 1) {
+                        setConfig({ ...config, index: config.index + 1, cursor: WORD_INDEX });
+                    }
                 // 영어 페이지인 경우, check(false)
                 } else {
                     check('FALSE')();
                 }
             }} />
         <div>
-            <span>{index[0]+1}</span>
+            <span>{config.words.length}</span>
+            /
+            <span>{config.index+1}</span>
             /
             <span style={{color: 'green'}}>{yes}</span>
             /
@@ -76,10 +86,10 @@ export default function Test(props) {
                 <button onClick={backward}>{'<'}</button>
                 <button onClick={forward}>{'>'}</button>
             </div>
-            <div className='word' style={{color: config.words[index[0]][CHECK_INDEX] == 'TRUE' ? 'green' : 'red'}}>
-                {config.words[index[0]][index[1]]}
+            <div className='word' style={{color: config.words[config.index][CHECK_INDEX] == 'TRUE' ? 'green' : 'red'}}>
+                {config.words[config.index][config.cursor]}
             </div>
-            {index[1] == WORD_INDEX ?(<>
+            {config.cursor == WORD_INDEX ?(<>
                 <div className='check'>
                     <button onClick={check('TRUE')}>yes</button>
                     <button onClick={check('FALSE')}>no</button>
@@ -87,23 +97,22 @@ export default function Test(props) {
             </>): null}
             <div className='control'>
                 <button className='stop' onClick={e => {
-                    setStop(!stop);
-                }}>{stop ? '시작' : '정지'}</button>
-                <button className='exit' onClick={() => {
-                    if (!config.erase) {
-                        setConfig(null);
-                    } else {
-                        fetch('/erase', {
-                            method: 'POST',
-                            body: JSON.stringify(config),
-                        }).then(res => res.json()).then(result => {
-                            console.log(result);
-                            setConfig(null);
-                        });
-                    }
-                }}>
-                    {config.erase ? '저장 및 종료' : '종료'}
-                </button>
+                    setConfig({ ...config, stop: !config.stop });
+                }}>{config.stop ? '시작' : '정지'}</button>
+                <button className='save' onClick={e => {
+                    e.target.disabled=true;
+                    setConfig({ ...config, stop: true });
+                    fetch('/erase', {
+                        method: 'POST',
+                        body: JSON.stringify(config),
+                    }).then(res => res.json()).then(result => {
+                        setConfig({ ...config, stop: false });
+                        e.target.disabled=false;
+                    });
+                }}>저장</button>
+                <button className='exit' onClick={e => {
+                    setConfig({...config, status:0});
+                }}>종료</button>
             </div>
         </div>
     </div>)
