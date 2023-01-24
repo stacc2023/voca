@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Bar from '../gui/bar';
 import ButtonFrame from '../gui/button';
+import WordBar from '../gui/word-bar';
 import './test.scss';
 
 const CHECK_INDEX = 0;
@@ -50,11 +51,25 @@ export default function Test(props) {
         else no++;
     }
 
+    // 바 클릭 이벤트
+    const touchBar = e => {
+        const x = (e.clientX || e.changedTouches[0].clientX) - e.target.getBoundingClientRect().x;
+        const w = e.target.getBoundingClientRect().width;
+        let newVal = Math.round(x / w * config.words.length) || 1;
+        if (newVal > config.words.length - 1) newVal = config.words.length - 1;
+        setConfig({ ...config, index: newVal - 1, cursor: WORD_INDEX, stop: false, });
+    }
+
     return (<div className="test">
-        <Bar 
+        <WordBar key={'' + config.index + config.cursor + 'bar'} config={config} setConfig={setConfig} />
+        {/* <Bar 
             key={'' + config.index + config.cursor + 'num'} 
+            type='count'
             val={config.index + 1} 
-            max={config.words.length} />
+            max={config.words.length}
+            onClick={touchBar}>
+            {(config.index+1) + ' / ' + (config.words.length)}
+        </Bar> */}
         <Bar 
             key={'' + config.index + config.cursor + 'dur'} 
             max={config.cursor == MEAN_INDEX ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
@@ -73,15 +88,6 @@ export default function Test(props) {
                     check('FALSE')();
                 }
             }} />
-        <div>
-            <span>{config.index+1}</span>
-            /
-            <span>{config.words.length}</span>
-            |
-            <span style={{color: 'green'}}>{yes}</span>
-            :
-            <span style={{color: 'red'}}>{no}</span>
-        </div>
         <div className='arrow'>
             <button onClick={backward}>{'<'}</button>
             <button onClick={forward}>{'>'}</button>
@@ -91,12 +97,10 @@ export default function Test(props) {
                 {config.words[config.index][config.cursor]}
             </div>
         </div>
-        {config.cursor == WORD_INDEX ?(
-            <ButtonFrame className="bottom center">
-                <button onClick={check('TRUE')} style={{color: 'rgb(0,255,0)'}}>정답</button>
-                <button onClick={check('FALSE')} style={{color: 'rgb(255, 50, 50)'}}>오답</button>
-            </ButtonFrame>
-        ): null}
+        <ButtonFrame className="bottom center">
+            <button onClick={check('TRUE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(0,255,0)'}}>정답: {yes}</button>
+            <button onClick={check('FALSE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(255, 50, 50)'}}>오답: {no}</button>
+        </ButtonFrame>
         <ButtonFrame className="top right">
             <button onClick={e => {
                 setConfig({ ...config, stop: !config.stop });

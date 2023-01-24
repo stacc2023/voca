@@ -1,5 +1,7 @@
 .frame {
     position: absolute;
+    user-select: none;
+
     button {
         border: 1px solid white;
         margin:0;

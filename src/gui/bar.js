@@ -4,9 +4,11 @@ import styles from './bar.module.scss';
 export default function Bar(props) {
     const [val, setVal] = useState(props.val || 0); 
     const [remains, setRemains] = useState(0);
-    const {stop} = props;
+    const {type, stop} = props;
 
     useEffect(() => {
+        if (type == 'count') return;
+
         let requestId;
         const start = Date.now();
         let newVal = 0;
@@ -32,7 +34,11 @@ export default function Bar(props) {
         }
     }, [stop])
 
-    return <div className={styles.container}>
-        <div className={styles.value} style={{width: (val / (props.max || 1000)) * 100 + "%"}}></div>
+    return <div className={styles.container} onClick={props.onClick}>
+        <div className={styles.value} style={{
+            width: (val / (props.max || 1000)) * 100 + "%",
+            backgroundColor: type == 'count' ? 'cyan' : `rgb(${255 * (val / (props.max || 1000))}, ${255 * (1 - (val / (props.max || 1000))**5)}, 0)`,
+        }}>{type == 'count' ? <div className={styles.cursor}></div>: null}</div>
+        <div className={styles.text}>{props.children}</div>
     </div>
 }
