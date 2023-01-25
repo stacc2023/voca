@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import styles from './word-bar.module.scss';
 
 const WORD_INDEX = 1;
+const CHECK_INDEX = 0;
 
 export default function WordBar({ config, setConfig }) {
     const canvasRef = useRef(null);
@@ -36,7 +37,7 @@ export default function WordBar({ config, setConfig }) {
         const size = words.length;
         const unit = w / size;
 
-        cursorRef.current.style.left = (index * unit + unit / 2 - cursorWidth / 2) + 'px';
+        cursorRef.current.style.left = (index * unit) - cursorWidth / 2 + unit / 2 + 2 + 'px';
 
         const canvas = canvasRef.current;
         canvas.width = canvas.offsetWidth;
@@ -66,35 +67,34 @@ export default function WordBar({ config, setConfig }) {
         if (newX < 0) newX = 0;
         if (newX > w - unit) newX = w - unit;
         // 단위 좌표 계산
-        newX = Math.floor(newX / w * size) * unit + unit / 2 - cursorWidth / 2;
+        const newIndex = Math.floor(newX / w * size)
+        newX = newIndex * unit - cursorWidth / 2 + unit / 2 + 2;
         cursorRef.current.style.left = newX + 'px';
+        return newIndex;
+    }
+
+    // 맞은 개수와 틀린 개수 표기하기 위한 계산
+    let yes = 0;
+    let no = 0;
+    for (let row of config.words) {
+        if (row[CHECK_INDEX] == 'TRUE') yes++;
+        else no++;
     }
 
     return (
         <div 
             className={styles.frame} 
-            onResize={e => console.log(e.target.offsetWidth)}
             onTouchMove = {touchBar}
             onTouchEnd = {e => {
-                const cursorWidth = cursorRef.current.getBoundingClientRect().width;
-                const x = e.currentTarget.getBoundingClientRect().x;
-                const w = e.currentTarget.getBoundingClientRect().width;
-                const size = words.length;
-                const unit = w / size;
-                // 절대 좌표 계산
-                let newX = e.changedTouches ? e.changedTouches[0].clientX - x : e.clientX - x;
-                if (newX < 0) newX = 0;
-                if (newX > w - unit) newX = w - unit;
-                // 단위 좌표 계산
-                const newIndex = Math.floor(newX / w * size);
-                newX = newIndex * unit + unit / 2 - cursorWidth / 2;
-                cursorRef.current.style.left = newX + 'px';
-
+                const newIndex = touchBar(e);
                 setConfig({ ...config, index: newIndex, cursor: WORD_INDEX, stop: false });
             }}
             >
             <canvas ref={canvasRef} className={styles.canvas} />
-            <div className={styles.index}>{index + 1 + ' / ' + words.length}</div>
+            <div className={styles.index}>
+                <span>{index + 1 + ' / ' + words.length}</span>
+                <span><span style={{color: 'lime'}}>{yes}</span> : <span style={{color: 'red'}}>{no}</span></span>
+            </div>
             <div 
                 className={styles.cursor}
                 ref = {cursorRef}

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from sheet import check, update, reset, sheets
+from speach import tts
 import json
 
 app = Flask(__name__)
@@ -28,6 +29,12 @@ def erase() :
     data = json.loads(request.get_data())
     update(data["sheet"], 'A' + str(data["start"]) + ':C' + str(data['end']), data['data'])
     return ['ok']
+
+@app.route('/speach', methods=['POST'])
+def speach() :
+    data = json.loads(request.get_data())
+    return tts(data['word'], data['code'])
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

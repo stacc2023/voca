@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Bar from '../gui/bar';
 import ButtonFrame from '../gui/button';
 import WordBar from '../gui/word-bar';
@@ -12,6 +12,21 @@ const MEAN_INDEX = 2;
 export default function Test(props) {
     const {config, setConfig} = props;
     const [stop, setStop] = useState(false);
+
+    useEffect(() => {
+        if (!config) return;
+        window.audioContext.resume();
+        fetch('/speach', {
+            method: 'POST',
+            body: JSON.stringify({ word: config.words[config.index][config.cursor], code: config.cursor == WORD_INDEX ? 'en-US' : 'ko-kr' }),
+        }).then(res => res.arrayBuffer()).then(data => window.audioContext.decodeAudioData(data)).then(audio => {
+            const playSound = window.audioContext.createBufferSource();
+            playSound.buffer = audio;
+            playSound.connect(window.audioContext.destination);
+            playSound.start(window.audioContext.currentTime);
+        });
+    }, [config.index, config.cursor]);
+
 
     // yes | no 버튼 누르면, config.words(config.data와 연동)의 데이터 변경 후 뜻 보여주기
     // config.stop = false
@@ -40,15 +55,7 @@ export default function Test(props) {
         for (let i = config.index - config.repeat + 1; i <= config.index; i++) {
             if (config.words[i][CHECK_INDEX] == 'FALSE') return false
         }
-        return true
-    }
-
-    // 맞은 개수와 틀린 개수 표기하기 위한 계산
-    let yes = 0;
-    let no = 0;
-    for (let row of config.words) {
-        if (row[CHECK_INDEX] == 'TRUE') yes++;
-        else no++;
+        return true;
     }
 
     // 바 클릭 이벤트
@@ -61,7 +68,6 @@ export default function Test(props) {
     }
 
     return (<div className="test">
-        <WordBar key={'' + config.index + config.cursor + 'bar'} config={config} setConfig={setConfig} />
         {/* <Bar 
             key={'' + config.index + config.cursor + 'num'} 
             type='count'
@@ -88,6 +94,7 @@ export default function Test(props) {
                     check('FALSE')();
                 }
             }} />
+        <WordBar key={'' + config.index + config.cursor + 'bar'} config={config} setConfig={setConfig} />
         <div className='arrow'>
             <button onClick={backward}>{'<'}</button>
             <button onClick={forward}>{'>'}</button>
@@ -98,8 +105,8 @@ export default function Test(props) {
             </div>
         </div>
         <ButtonFrame className="bottom center">
-            <button onClick={check('TRUE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(0,255,0)'}}>정답: {yes}</button>
-            <button onClick={check('FALSE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(255, 50, 50)'}}>오답: {no}</button>
+            <button onClick={check('TRUE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(0,255,0)'}}>정답</button>
+            <button onClick={check('FALSE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(255, 50, 50)'}}>오답</button>
         </ButtonFrame>
         <ButtonFrame className="top right">
             <button onClick={e => {

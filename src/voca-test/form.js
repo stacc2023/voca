@@ -56,6 +56,7 @@ export default function Form(props) {
                     /**
                      * 단어 파이프라인 만들기
                      */
+                    window.audioContext.resume();
                     const words = config.erase ? data.filter(row => row[CHECK_INDEX] == 'FALSE') : [...data];
                     if (config.sort) {
                         words.sort(() => Math.random() - 0.5);
