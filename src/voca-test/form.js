@@ -44,6 +44,14 @@ export default function Form(props) {
                     <td><label htmlFor="sort">랜덤정렬:</label></td>
                     <td><input id="sort" type="checkbox" checked={config.sort} onChange={(e) => setConfig({...config, sort: e.target.checked })}/></td>
                 </tr>
+                <tr>
+                    <td><label htmlFor="mean-speach">뜻 읽어주기:</label></td>
+                    <td><input id="mean-speach" type="checkbox" checked={config.speach} onChange={(e) => setConfig({...config, speach: e.target.checked })}/></td>
+                </tr>
+                <tr>
+                    <td><label htmlFor="uk-speach">영국발음 :</label></td>
+                    <td><input id="uk-speach" type="checkbox" checked={config.uk} onChange={(e) => setConfig({...config, uk: e.target.checked })}/></td>
+                </tr>
             </tbody>
         </table>
         <ButtonFrame className="right bottom">
@@ -52,11 +60,11 @@ export default function Form(props) {
                 fetch('/words', {
                     method: 'POST',
                     body: JSON.stringify({ start, end, sheet: config.sheet }),
-                }).then(res => res.json()).then(data => {
+                }).then(res => res.json()).then(async data => {
                     /**
                      * 단어 파이프라인 만들기
                      */
-                    window.audioContext.resume();
+                    await window.audioContext.resume();
                     const words = config.erase ? data.filter(row => row[CHECK_INDEX] == 'FALSE') : [...data];
                     if (config.sort) {
                         words.sort(() => Math.random() - 0.5);

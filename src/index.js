@@ -10,8 +10,6 @@ function App() {
 
     useEffect(() => {
         window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        window.audioContext.resume();
-
         fetch('/sheets').then(res => res.json()).then(data => {
             setSheets(data);       
         })

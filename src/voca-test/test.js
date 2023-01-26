@@ -8,31 +8,71 @@ const CHECK_INDEX = 0;
 const WORD_INDEX = 1;
 const MEAN_INDEX = 2;
 
-
 export default function Test(props) {
     const {config, setConfig} = props;
-    const [stop, setStop] = useState(false);
 
+
+
+
+
+    /**
+     * ****************************** TTS ******************************
+     */
+    
+    // 정지된 경우 api 정지, 다시 시작된 경우 재할당
     useEffect(() => {
-        if (!config) return;
-        window.audioContext.resume();
-        fetch('/speach', {
+        if (config.stop && window.audioContext) {
+            window.audioContext.suspend();
+        } else if (window.audioContext.state == 'suspended') {
+            window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            window.audioContext.resume();
+        }
+    }, [config.stop])
+
+    // 인덱스나 커서가 변경 된 경우 불러오기
+    async function tts(config) {
+        if (!config.speach && config.cursor == MEAN_INDEX) return;
+        await window.audioContext.resume();
+    
+        // 언어 타입
+        let code;
+        if (config.cursor == MEAN_INDEX) {
+            code = 'ko-KR';
+        } else if (config.uk) {
+            code = 'en-GB';
+        } else {
+            code = 'en-US';
+        }
+    
+        const res = await fetch('/speach', {
             method: 'POST',
-            body: JSON.stringify({ word: config.words[config.index][config.cursor], code: config.cursor == WORD_INDEX ? 'en-US' : 'ko-kr' }),
-        }).then(res => res.arrayBuffer()).then(data => window.audioContext.decodeAudioData(data)).then(audio => {
-            const playSound = window.audioContext.createBufferSource();
-            playSound.buffer = audio;
-            playSound.connect(window.audioContext.destination);
-            playSound.start(window.audioContext.currentTime);
+            body: JSON.stringify({ word: config.words[config.index][config.cursor], code }),
         });
+        const data = await res.arrayBuffer(); 
+        const audio = await window.audioContext.decodeAudioData(data);
+        const playSound = window.audioContext.createBufferSource();
+        playSound.buffer = audio;
+        playSound.connect(window.audioContext.destination);
+        playSound.start(window.audioContext.currentTime);
+    }
+    useEffect(() => {
+        tts(config);
     }, [config.index, config.cursor]);
+
+
+
+
+
+    /**
+     * ****************************** ui 함수 ******************************
+     */
 
 
     // yes | no 버튼 누르면, config.words(config.data와 연동)의 데이터 변경 후 뜻 보여주기
     // config.stop = false
     const check = ans => e => {
         config.words[config.index][CHECK_INDEX] = ans;
-        setConfig({ ...config, cursor: MEAN_INDEX, stop:false });
+        setConfig(config => {return { ...config, cursor: MEAN_INDEX, stop:false }});
     }
     // 뒤로가기 버튼 누르면, 현재 커서가 뜻인 경우 해당 단어를 보여주고 단어인 경우 이전 단어
     // config.stop = false
@@ -58,24 +98,16 @@ export default function Test(props) {
         return true;
     }
 
-    // 바 클릭 이벤트
-    const touchBar = e => {
-        const x = (e.clientX || e.changedTouches[0].clientX) - e.target.getBoundingClientRect().x;
-        const w = e.target.getBoundingClientRect().width;
-        let newVal = Math.round(x / w * config.words.length) || 1;
-        if (newVal > config.words.length - 1) newVal = config.words.length - 1;
-        setConfig({ ...config, index: newVal - 1, cursor: WORD_INDEX, stop: false, });
-    }
+
+
+
+
+    /**
+     * ****************************** ui ******************************
+     */
+
 
     return (<div className="test">
-        {/* <Bar 
-            key={'' + config.index + config.cursor + 'num'} 
-            type='count'
-            val={config.index + 1} 
-            max={config.words.length}
-            onClick={touchBar}>
-            {(config.index+1) + ' / ' + (config.words.length)}
-        </Bar> */}
         <Bar 
             key={'' + config.index + config.cursor + 'dur'} 
             max={config.cursor == MEAN_INDEX ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
@@ -84,10 +116,10 @@ export default function Test(props) {
                 // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
                 if (config.cursor == MEAN_INDEX) {
                     if (config.repeat != 0 && config.index % config.repeat == config.repeat - 1 && !passable()) {
-                        setConfig({ ...config, index: config.index - config.repeat + 1, cursor: WORD_INDEX });
+                        setConfig(config => { return { ...config, index: config.index - config.repeat + 1, cursor: WORD_INDEX } });
                     }
                     else if (config.index < config.words.length - 1) {
-                        setConfig({ ...config, index: config.index + 1, cursor: WORD_INDEX });
+                        setConfig(config => { return { ...config, index: config.index + 1, cursor: WORD_INDEX } });
                     }
                 // 영어 페이지인 경우, check(false)
                 } else {
@@ -107,6 +139,14 @@ export default function Test(props) {
         <ButtonFrame className="bottom center">
             <button onClick={check('TRUE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(0,255,0)'}}>정답</button>
             <button onClick={check('FALSE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(255, 50, 50)'}}>오답</button>
+        </ButtonFrame>
+        <ButtonFrame className="top left">        
+            <button onClick={e => {
+                    setConfig({ ...config, uk: !config.uk });
+                }} style={{
+                    paddingLeft: '5px',
+                    paddingRight: '5px',
+            }}>{config.uk ? '영국' : '미국'}</button>
         </ButtonFrame>
         <ButtonFrame className="top right">
             <button onClick={e => {

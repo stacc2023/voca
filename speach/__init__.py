@@ -1,9 +1,15 @@
 from google.cloud import texttospeech
+from speach.cambridge import cambridge
 
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
 
 def tts(word, code) :
+
+    response = cambridge(word, code)
+    if response != False :
+        return response
+
     # Set the text input to be synthesized
     synthesis_input = texttospeech.SynthesisInput(text=word)
 

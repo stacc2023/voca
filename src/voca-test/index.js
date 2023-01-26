@@ -16,6 +16,8 @@ export default function Window(props) {
         meanLimit: 1000,
         erase: false,
         sort: false,
+        speach: false,
+        uk: false,
         status: 0,
         index: 0,
         cursor: WORD_INDEX,
