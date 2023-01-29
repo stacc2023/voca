@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 from sheet import check, update, reset, sheets
-from speach import tts
+from speach import check_voice
 import json
 
 app = Flask(__name__)
@@ -33,7 +33,8 @@ def erase() :
 @app.route('/speach', methods=['POST'])
 def speach() :
     data = json.loads(request.get_data())
-    return tts(data['word'], data['code'])
+    # return tts(data['word'], data['code'])
+    return check_voice(data)
 
 
 if __name__ == '__main__':

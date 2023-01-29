@@ -12,7 +12,7 @@ function App() {
     useEffect(() => {
         window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         fetch('/sheets').then(res => res.json()).then(data => {
-            setSheets(data);       
+            setSheets(data.filter(sheet => sheet.title.startsWith('voca-')));
         })
     }, [])
 
@@ -25,7 +25,7 @@ function App() {
                 {sheets.map(sheet => <li 
                     key={sheet.id}
                     onClick={e => { audioRef.current.play(); setSheet(sheet.title); }}>
-                        {sheet.title}
+                        {sheet.title.split('-')[1]}
                 </li>)}
             </ul>
         </div>)
