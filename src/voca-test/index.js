@@ -1,5 +1,5 @@
 import './index.scss';
-import Form from './form';
+import Config from './config';
 import Test from './test';
 import { useState, useEffect } from 'react';
 import Mask from '../gui/mask';
@@ -18,6 +18,8 @@ export default function Window(props) {
         sort: false,
         speach: false,
         uk: false,
+        merge: false,
+        speachLimit: false,
         status: 0,
         index: 0,
         cursor: WORD_INDEX,
@@ -28,7 +30,7 @@ export default function Window(props) {
     // config가 null 인 경우 설정 창
     if (!config.status) {
         return <Mask>
-            <Form 
+            <Config 
                 setSheet={props.setSheet}
                 config={config}
                 setConfig={setConfig} />

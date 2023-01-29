@@ -1,14 +1,18 @@
 from google.cloud import texttospeech
 from speach.cambridge import cambridge
+import os
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getcwd() + '/credentials-tts.json'
 
 # Instantiates a client
 client = texttospeech.TextToSpeechClient()
 
 def tts(word, code) :
 
-    response = cambridge(word, code)
-    if response != False :
-        return response
+    # 사전 단어 발음
+    # response = cambridge(word, code)
+    # if response != False :
+    #     return response
 
     # Set the text input to be synthesized
     synthesis_input = texttospeech.SynthesisInput(text=word)

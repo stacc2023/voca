@@ -23,17 +23,22 @@ export default function Test(props) {
     useEffect(() => {
         if (config.stop && window.audioContext) {
             window.audioContext.suspend();
-        } else if (window.audioContext.state == 'suspended') {
-            window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } else if (window.audioContext.state == 'suspended' || window.audioContext.state == 'closed') {
+            document.querySelector('#test').play();
+            document.querySelector('#test').pause();
+            if (!config.speachLimit) window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
             window.audioContext.resume();
+        } else {
         }
     }, [config.stop])
 
     // 인덱스나 커서가 변경 된 경우 불러오기
-    async function tts(config) {
+    async function tts() {
         if (!config.speach && config.cursor == MEAN_INDEX) return;
         await window.audioContext.resume();
-    
+        
+        if (config.speachLimit) setConfig(config => { return { ...config, limit: 100000, meanLimit: 100000, stop: true } })
+
         // 언어 타입
         let code;
         if (config.cursor == MEAN_INDEX) {
@@ -50,13 +55,15 @@ export default function Test(props) {
         });
         const data = await res.arrayBuffer(); 
         const audio = await window.audioContext.decodeAudioData(data);
-        const playSound = window.audioContext.createBufferSource();
-        playSound.buffer = audio;
-        playSound.connect(window.audioContext.destination);
-        playSound.start(window.audioContext.currentTime);
+        if (config.speachLimit) setConfig(config => { return { ...config, limit: audio.duration * 1000, meanLimit: audio.duration * 1000, stop: false } })
+        if (window.playSound) window.playSound.stop();
+        window.playSound = window.audioContext.createBufferSource();
+        window.playSound.buffer = audio;
+        window.playSound.connect(window.audioContext.destination);
+        window.playSound.start(window.audioContext.currentTime);
     }
     useEffect(() => {
-        tts(config);
+        tts();
     }, [config.index, config.cursor]);
 
 
@@ -109,13 +116,13 @@ export default function Test(props) {
 
     return (<div className="test">
         <Bar 
-            key={'' + config.index + config.cursor + 'dur'} 
+            key={'' + config.index + config.cursor + 'dur' + config.limit} 
             max={config.cursor == MEAN_INDEX ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
             stop={config.stop}
             callback={() => {
                 // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
                 if (config.cursor == MEAN_INDEX) {
-                    if (config.repeat != 0 && config.index % config.repeat == config.repeat - 1 && !passable()) {
+                    if (config.repeat != 0 && (config.index % config.repeat == config.repeat - 1 || config.index == config.words.length - 1) && !passable()) {
                         setConfig(config => { return { ...config, index: config.index - config.repeat + 1, cursor: WORD_INDEX } });
                     }
                     else if (config.index < config.words.length - 1) {
@@ -152,7 +159,7 @@ export default function Test(props) {
             <button onClick={e => {
                 setConfig({ ...config, stop: !config.stop });
             }}>{config.stop ? '시작' : '정지'}</button>
-            <button onClick={e => {
+            <button disabled={config.merge} onClick={e => {
                 e.target.disabled=true;
                 setConfig({ ...config, stop: true });
                 fetch('/erase', {

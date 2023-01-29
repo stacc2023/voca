@@ -21,9 +21,9 @@ def cambridge(word, type) :
     
     # 영어 발음 또는 영국 발음
     if type == 'en-US' :
-        el = soup.select_one('#audio2 source')
+        el = soup.select_one('.us #audio2 source')
     elif type == 'en-GB' :
-        el = soup.select_one('#audio1 source')
+        el = soup.select_one('.uk #audio1 source')
 
     # 단어 추출
     if el :

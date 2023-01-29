@@ -1,0 +1,24 @@
+.form {
+    font-size: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+    margin: 0.5em auto;
+
+    td {
+        position: relative;
+        padding: 2px 0;
+
+        label {
+            display: block;
+        }
+
+        input {
+            display: block;
+            font-size: inherit;
+            padding: 0 2px;
+            margin: 0;
+        }
+
+    }
+
+}
