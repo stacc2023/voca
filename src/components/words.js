@@ -1,19 +1,13 @@
-import { useState, useEffect } from 'react';
-import Bar from '../gui/bar';
-import ButtonFrame from '../gui/button';
-import WordBar from '../gui/word-bar';
+import { useEffect, useContext } from 'react';
+import { CHECK_COLUMN, INIT_LIMIT, INIT_MEANLIMIT, MEAN_COLUMN, STATE_SET_SHEET, WORD_COLUMN } from '../context/types';
 import './test.scss';
+import { ConfigContext } from '../context';
+import Bar from '../gui/bar';
+import WordBar from '../gui/word-bar';
+import ButtonFrame from '../gui/button';
 
-const CHECK_INDEX = 0;
-const WORD_INDEX = 1;
-const MEAN_INDEX = 2;
-
-export default function Test(props) {
-    const {config, setConfig} = props;
-
-
-
-
+export default function Words(props) {
+    const { config, dispatch } = useContext(ConfigContext);
 
     /**
      * ****************************** TTS ******************************
@@ -34,14 +28,24 @@ export default function Test(props) {
 
     // 인덱스나 커서가 변경 된 경우 불러오기
     async function tts() {
-        if (!config.speach && config.cursor == MEAN_INDEX) return;
+        if (!config.speach && config.cursor == MEAN_COLUMN) return;
         await window.audioContext.resume();
         
-        if (config.speachLimit) setConfig(config => { return { ...config, limit: 100000, meanLimit: 100000, stop: true } })
+        // 오디오 기준의 시간제한
+        if (config.speachLimit) {
+            dispatch({
+                type: 'update',
+                value: {
+                    limit: 1000000,
+                    meanLimit: config.speach ? 1000000: config.meanLimit,
+                    stop: true,
+                }
+            });
+        }
 
         // 언어 타입
         let code;
-        if (config.cursor == MEAN_INDEX) {
+        if (config.cursor == MEAN_COLUMN) {
             code = 'ko-KR';
         } else if (config.uk) {
             code = 'en-GB';
@@ -55,7 +59,17 @@ export default function Test(props) {
         });
         const data = await res.arrayBuffer(); 
         const audio = await window.audioContext.decodeAudioData(data);
-        if (config.speachLimit) setConfig(config => { return { ...config, limit: audio.duration * 1000, meanLimit: audio.duration * 1000, stop: false } })
+        if (config.speachLimit) { 
+            dispatch({
+                type: 'update',
+                value: {
+                    limit: audio.duration * 1000,
+                    meanLimit: config.speach ? audio.duration * 1000 : config.meanLimit,
+                    stop: false,
+                }
+            })
+            // setConfig(config => { return { ...config, limit: audio.duration * 1000, meanLimit: audio.duration * 1000, stop: false } })
+        }
         if (window.playSound) window.playSound.stop();
         window.playSound = window.audioContext.createBufferSource();
         window.playSound.buffer = audio;
@@ -74,39 +88,19 @@ export default function Test(props) {
      * ****************************** ui 함수 ******************************
      */
 
-
-    // yes | no 버튼 누르면, config.words(config.data와 연동)의 데이터 변경 후 뜻 보여주기
-    // config.stop = false
-    const check = ans => e => {
-        config.words[config.index][CHECK_INDEX] = ans;
-        setConfig(config => {return { ...config, cursor: MEAN_INDEX, stop:false }});
+    const check = answer => e => {
+        dispatch({
+            type: 'check',
+            answer,
+        })
+        // setConfig(config => {return { ...config, cursor: MEAN_COLUMN, stop:false }});
     }
-    // 뒤로가기 버튼 누르면, 현재 커서가 뜻인 경우 해당 단어를 보여주고 단어인 경우 이전 단어
-    // config.stop = false
     const backward = (e) => {
-        if (config.cursor == MEAN_INDEX) {
-            setConfig({ ...config, cursor: WORD_INDEX, stop: false });
-        } else if (config.index > 0) {
-            setConfig({ ...config, index: config.index - 1, stop: false })
-        }
+        dispatch({ type: 'prev' });
     }
-    // 앞으로 가기 버튼 누르면 커서에 상관 없이 다음 단어
-    // config.stop = false
     const forward = e => {
-        if (config.index < config.words.length - 1) {
-            setConfig({ ...config, index: config.index + 1, cursor: WORD_INDEX, stop:false });
-        }
+        dispatch({ type: 'next', force: true });
     }
-    // config.repeat가 0이 아닌 경우 이전 단어 묶음을 모두 맞췄는지에 따라 반복 여부 결정
-    const passable = () => {
-        for (let i = config.index - config.repeat + 1; i <= config.index; i++) {
-            if (config.words[i][CHECK_INDEX] == 'FALSE') return false
-        }
-        return true;
-    }
-
-
-
 
 
     /**
@@ -117,39 +111,39 @@ export default function Test(props) {
     return (<div className="test">
         <Bar 
             key={'' + config.index + config.cursor + 'dur' + config.limit} 
-            max={config.cursor == MEAN_INDEX ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
+            max={config.cursor == MEAN_COLUMN ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
             stop={config.stop}
             callback={() => {
                 // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
-                if (config.cursor == MEAN_INDEX) {
-                    if (config.repeat != 0 && (config.index % config.repeat == config.repeat - 1 || config.index == config.words.length - 1) && !passable()) {
-                        setConfig(config => { return { ...config, index: config.index - config.repeat + 1, cursor: WORD_INDEX } });
-                    }
-                    else if (config.index < config.words.length - 1) {
-                        setConfig(config => { return { ...config, index: config.index + 1, cursor: WORD_INDEX } });
-                    }
+                if (config.cursor == MEAN_COLUMN) {
+                    dispatch({ type: 'next' })
                 // 영어 페이지인 경우, check(false)
                 } else {
-                    check('FALSE')();
+                    check(false)();
                 }
             }} />
-        <WordBar key={'' + config.index + config.cursor + 'bar'} config={config} setConfig={setConfig} />
+        <WordBar key={'' + config.index + config.cursor + 'bar'} />
         <div className='arrow'>
             <button onClick={backward}>{'<'}</button>
             <button onClick={forward}>{'>'}</button>
         </div>
         <div className="content">      
-            <div className='word' style={{color: config.words[config.index][CHECK_INDEX] == 'TRUE' ? 'green' : 'red'}}>
+            <div className='word' style={{color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red'}}>
                 {config.words[config.index][config.cursor]}
             </div>
         </div>
         <ButtonFrame className="bottom center">
-            <button onClick={check('TRUE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(0,255,0)'}}>정답</button>
-            <button onClick={check('FALSE')} disabled={config.cursor != WORD_INDEX} style={{color: config.cursor != WORD_INDEX ? '#aaa' : 'rgb(255, 50, 50)'}}>오답</button>
+            <button onClick={check(true)} style={{color: 'rgb(0,255,0)'}}>정답</button>
+            <button onClick={check(false)} style={{color: 'rgb(255, 50, 50)'}}>오답</button>
         </ButtonFrame>
         <ButtonFrame className="top left">        
             <button onClick={e => {
-                    setConfig({ ...config, uk: !config.uk });
+                    dispatch({
+                        type: 'update',
+                        value: {
+                            uk: !config.uk,
+                        }
+                    });
                 }} style={{
                     paddingLeft: '5px',
                     paddingRight: '5px',
@@ -157,21 +151,43 @@ export default function Test(props) {
         </ButtonFrame>
         <ButtonFrame className="top right">
             <button onClick={e => {
-                setConfig({ ...config, stop: !config.stop });
+                dispatch({
+                    type: 'update',
+                    value: {
+                        stop: !config.stop,
+                    }
+                });
             }}>{config.stop ? '시작' : '정지'}</button>
             <button disabled={config.merge} onClick={e => {
                 e.target.disabled=true;
-                setConfig({ ...config, stop: true });
+                dispatch({
+                    type: 'update',
+                    value: {
+                        stop: true,
+                    }
+                });
                 fetch('/erase', {
                     method: 'POST',
                     body: JSON.stringify(config),
                 }).then(res => res.json()).then(result => {
-                    setConfig({ ...config, stop: false });
+                    dispatch({
+                        type: 'update',
+                        value: {
+                            stop: true,
+                        }
+                    });
                     e.target.disabled=false;
                 });
             }}>저장</button>
             <button onClick={e => {
-                setConfig({...config, status:0});
+                dispatch({
+                    type: 'update',
+                    value: {
+                        state: STATE_SET_SHEET,
+                        limit: config.speachLimit ? INIT_LIMIT : config.limit,
+                        meanLimit: config.speachLimit ? INIT_MEANLIMIT : config.meanLimit,
+                    }
+                });
             }}>종료</button>
         </ButtonFrame>
     </div>)

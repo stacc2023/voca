@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { ConfigContext } from '../context';
+import { CHECK_COLUMN, WORD_COLUMN } from '../context/types';
 import styles from './word-bar.module.scss';
 
-const WORD_INDEX = 1;
-const CHECK_INDEX = 0;
-
-export default function WordBar({ config, setConfig }) {
+export default function WordBar() {
     const canvasRef = useRef(null);
     const cursorRef = useRef(null);
     const [ctx, setCtx] = useState(null);
+    
+    const { config, dispatch } = useContext(ConfigContext);
     const { words, index } = config;
     
     const draw = ctx =>{
@@ -77,7 +78,7 @@ export default function WordBar({ config, setConfig }) {
     let yes = 0;
     let no = 0;
     for (let row of config.words) {
-        if (row[CHECK_INDEX] == 'TRUE') yes++;
+        if (row[CHECK_COLUMN] == 'TRUE') yes++;
         else no++;
     }
 
@@ -87,7 +88,14 @@ export default function WordBar({ config, setConfig }) {
             onTouchMove = {touchBar}
             onTouchEnd = {e => {
                 const newIndex = touchBar(e);
-                setConfig({ ...config, index: newIndex, cursor: WORD_INDEX, stop: false });
+                dispatch({
+                    type: 'update',
+                    value: {
+                        index: newIndex,
+                        cursor: WORD_COLUMN,
+                        stop: false,
+                    }
+                })
             }}
             >
             <canvas ref={canvasRef} className={styles.canvas} />

@@ -33,4 +33,4 @@ def update(sheet_name, area, data) :
 
 def reset(sheet_name, area, start, end) :
     sheet = doc.worksheet(sheet_name)
-    sheet.update(area, [[False] for i in range(int(start), int(end) + 1)])
+    sheet.update(area, [[False] for i in range(len(sheet.get(area)))])

@@ -16,7 +16,7 @@ def get_sheets() :
 @app.route('/words', methods=['POST'])
 def words() :
     data = json.loads(request.get_data())
-    return check(data["sheet"], 'A' + str(data["start"]) + ':C' + str(data['end']))
+    return check(data["sheet"], 'A' + str(data["start"]) + ':D' + str(data['end']))
 
 @app.route('/reset', methods=['POST'])
 def reset_word() :
@@ -27,7 +27,7 @@ def reset_word() :
 @app.route('/erase', methods=['POST'])
 def erase() :
     data = json.loads(request.get_data())
-    update(data["sheet"], 'A' + str(data["start"]) + ':C' + str(data['end']), data['data'])
+    update(data["sheet"], 'A' + str(data["start"]) + ':D' + str(data['end']), data['data'])
     return ['ok']
 
 @app.route('/speach', methods=['POST'])
