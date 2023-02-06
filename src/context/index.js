@@ -38,6 +38,12 @@ function next(state, force) {
 
     // force=false and repeat>0 and (index=n*repeat 또는 마지막 단어) and 범위 안에 틀린 단어 존재
     if (!force && state.repeat && (state.index % state.repeat == state.repeat - 1 || state.index == state.words.length - 1) && !passable(state)) {
+
+        // 다시 섞기
+        let suffled = state.words.slice(state.index - state.repeat + 1, state.index + 1);
+        suffled.sort(() => Math.random() - 0.5);
+        state.words.splice(state.index - state.repeat + 1, state.repeat, ...suffled);
+
         return { ...state, index: state.index - state.repeat + 1, cursor: WORD_COLUMN, stop:false };
     }
 

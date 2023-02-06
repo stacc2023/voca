@@ -16,7 +16,7 @@ export default function Config() {
                 <input id="end" type="number" name="끝" value={end} onChange={e => setEnd(e.target.value)} />
                 <input id="repeat" type="number" name="반복 단위" value={config.repeat} onChange={e => dispatch({type: 'update', value: { repeat: e.target.value }})} />
                 <input id="word-limit" type="number" name="단어 제한시간" disabled={config.speachLimit} value={config.speachLimit ? '' : config.limit} onChange={e => dispatch({type: 'update', value: { limit: e.target.value }})} />
-                <input id="mean-limit" type="number" name="뜻 제한시간" disabled={config.speachLimit && config.speach} value={config.speachLimit ? '' : config.meanLimit} onChange={e => dispatch({type: 'update', value: { meanLimit: e.target.value }})} />
+                <input id="mean-limit" type="number" name="뜻 제한시간" disabled={config.speachLimit && config.speach} value={config.speachLimit && config.speach ? '' : config.meanLimit} onChange={e => dispatch({type: 'update', value: { meanLimit: e.target.value }})} />
                 <input id="erase" type="checkbox" name="외운 단어 제외" checked={config.erase} onChange={e => dispatch({type: 'update', value: { erase: e.target.checked }})} />
                 <input id="sort" type="checkbox" name="무작위" checked={config.sort} onChange={e => dispatch({type: 'update', value: { sort: e.target.checked }})} />
                 <input id="mean-speach" type="checkbox" name="뜻 음성" checked={config.speach} onChange={e => dispatch({type: 'update', value: { speach: e.target.checked }})} />
