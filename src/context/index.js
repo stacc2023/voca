@@ -16,6 +16,7 @@ const initConfig = {
     uk: false,
     merge: false,
     speachLimit: false,
+    repeatSort: false,
     index: 0,
     cursor: WORD_COLUMN,
     stop: false,
@@ -40,9 +41,11 @@ function next(state, force) {
     if (!force && state.repeat && (state.index % state.repeat == state.repeat - 1 || state.index == state.words.length - 1) && !passable(state)) {
 
         // 다시 섞기
-        let suffled = state.words.slice(state.index - state.repeat + 1, state.index + 1);
-        suffled.sort(() => Math.random() - 0.5);
-        state.words.splice(state.index - state.repeat + 1, state.repeat, ...suffled);
+        if (state.repeatSort) {
+            let suffled = state.words.slice(state.index - state.repeat + 1, state.index + 1);
+            suffled.sort(() => Math.random() - 0.5);
+            state.words.splice(state.index - state.repeat + 1, state.repeat, ...suffled);
+        }
 
         return { ...state, index: state.index - state.repeat + 1, cursor: WORD_COLUMN, stop:false };
     }

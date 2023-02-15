@@ -1,5 +1,5 @@
 import { useEffect, useContext } from 'react';
-import { CHECK_COLUMN, INIT_LIMIT, INIT_MEANLIMIT, MEAN_COLUMN, STATE_SET_SHEET, WORD_COLUMN } from '../context/types';
+import { CHAPTER_COLUMN, CHECK_COLUMN, INIT_LIMIT, INIT_MEANLIMIT, MEAN_COLUMN, STATE_SET_SHEET, WORD_COLUMN } from '../context/types';
 import './test.scss';
 import { ConfigContext } from '../context';
 import Bar from '../gui/bar';
@@ -128,7 +128,15 @@ export default function Words(props) {
             <button onClick={forward}>{'>'}</button>
         </div>
         <div className="content">      
-            <div className='word' style={{color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red'}}>
+            <div 
+                className='word' 
+                style={{
+                    color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red'
+                }}
+                onClick={e => {
+                    alert(config.words[config.index][CHAPTER_COLUMN]);            
+                    window.audioContext.resume();
+                }}>
                 {config.words[config.index][config.cursor]}
             </div>
         </div>
