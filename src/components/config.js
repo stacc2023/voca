@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import ButtonFrame from '../gui/button';
 import Form from '../gui/form';
-import { CHECK_COLUMN, STATE_IDLE, STATE_SET_WORD, WORD_COLUMN } from '../context/types';
+import { CHAPTER_COLUMN, CHECK_COLUMN, MEAN_COLUMN, STATE_IDLE, STATE_SET_WORD, WORD_COLUMN } from '../context/types';
 import { ConfigContext } from '../context';
 
 export default function Config() {
@@ -13,8 +13,8 @@ export default function Config() {
         <div>
             <Form>
                 <input id="start" type="number" name="시작" value={start} onChange={e => setStart(e.target.value)} />
-                <input id="end" type="number" name="끝" value={end} onChange={e => setEnd(e.target.value)} />
-                <input id="repeat" type="number" name="반복 단위" value={config.repeat} onChange={e => dispatch({type: 'update', value: { repeat: e.target.value }})} />
+                <input id="end" type="number" name="끝" value={end} placeholder="MAX" onChange={e => setEnd(e.target.value)} />
+                <input id="repeat" type="number" name="반복 단위" placeholder="반복없음" value={config.repeat} onChange={e => dispatch({type: 'update', value: { repeat: e.target.value }})} />
                 <input id="word-limit" type="number" name="단어 제한시간" disabled={config.speachLimit} value={config.speachLimit ? '' : config.limit} onChange={e => dispatch({type: 'update', value: { limit: e.target.value }})} />
                 <input id="mean-limit" type="number" name="뜻 제한시간" disabled={config.speachLimit && config.speach} value={config.speachLimit && config.speach ? '' : config.meanLimit} onChange={e => dispatch({type: 'update', value: { meanLimit: e.target.value }})} />
                 <input id="erase" type="checkbox" name="외운 단어 제외" checked={config.erase} onChange={e => dispatch({type: 'update', value: { erase: e.target.checked }})} />
@@ -27,7 +27,7 @@ export default function Config() {
                 <button onClick={e => {
                     e.target.disabled = true;
                     document.querySelector('#test').play();
-                    document.querySelector('#test').pause();                    
+                    document.querySelector('#test').pause();    
                     fetch('/words', {
                         method: 'POST',
                         body: JSON.stringify({ start, end, sheet: config.sheet }),
@@ -45,15 +45,15 @@ export default function Config() {
                         if (config.merge) {
                             words = words.reduce((acc, cur) => {
                                 if (!acc.length) { // 첫번째
-                                    acc[0] = ['FALSE', [cur[1]], cur[2]];
-                                } else if (acc[acc.length - 1][2] == cur[2]) { // 뜻이 같으면 합치기
-                                    acc[acc.length - 1][1].push(cur[1]);
+                                    acc[0] = ['FALSE', [cur[WORD_COLUMN]], cur[MEAN_COLUMN].split(';')[0]];
+                                } else if (acc[acc.length - 1][MEAN_COLUMN] == cur[MEAN_COLUMN].split(';')[0]) { // 뜻이 같으면 합치기
+                                    acc[acc.length - 1][WORD_COLUMN].push(cur[WORD_COLUMN]);
                                 } else { // 뜻이 다르면 나누기
-                                    acc.push(['FALSE', [cur[1]], cur[2]]);
+                                    acc.push(['FALSE', [cur[WORD_COLUMN]], cur[MEAN_COLUMN].split(';')[0]]);
                                 }
                                 return acc;
                             }, []).map(row => {
-                                row[1] = row[1].join(', ');
+                                row[WORD_COLUMN] = row[WORD_COLUMN].join(', ');
                                 return row;
                             });
                         }

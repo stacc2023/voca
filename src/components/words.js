@@ -188,6 +188,7 @@ export default function Words(props) {
                 });
             }}>저장</button>
             <button onClick={e => {
+                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 dispatch({
                     type: 'update',
                     value: {

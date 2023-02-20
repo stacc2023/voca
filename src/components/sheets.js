@@ -8,7 +8,6 @@ export default function Sheets() {
     const { config, dispatch } = useContext(ConfigContext);
 
     useEffect(() => {
-        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         fetch('/sheets').then(res => res.json()).then(data => {
             setSheets(data.filter(sheet => sheet.title.startsWith('voca-')));
         });
@@ -21,7 +20,8 @@ export default function Sheets() {
             <ul className="sheet-list">
                 {sheets.map(sheet => <li 
                     key={sheet.id}
-                    onClick={e => {     
+                    onClick={e => {        
+                        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                         document.querySelector('#test').play();
                         document.querySelector('#test').pause();
                         dispatch({
