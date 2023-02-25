@@ -59,7 +59,12 @@ export default function Config() {
                         }
                         
                         if (config.sort) {
-                            words.sort(() => Math.random() - 0.5);
+                            let currentIndex = words.length, randomIndex;
+                            while (currentIndex != 0) {
+                                randomIndex = Math.floor(Math.random() * currentIndex);
+                                currentIndex--;
+                                [words[currentIndex], words[randomIndex]] = [words[randomIndex], words[currentIndex]];
+                            }
                         }
                         // start와 end를 config에 직접 연동해 버리면, 시작 버튼은 문제 없으나 불러오기 버튼에서 문제 생김 
                         dispatch({

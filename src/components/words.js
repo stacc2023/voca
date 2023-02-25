@@ -124,14 +124,15 @@ export default function Words(props) {
             }} />
         <WordBar key={'' + config.index + config.cursor + 'bar'} />
         <div className='arrow'>
-            <button onClick={backward}>{'<'}</button>
-            <button onClick={forward}>{'>'}</button>
+            <button onClick={backward} >{'<'}</button>
+            <button onClick={forward} >{'>'}</button>
         </div>
         <div className="content">      
             <div 
                 className='word' 
                 style={{
-                    color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red'
+                    color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red',
+                    // textShadow: '-1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff',
                 }}
                 onClick={e => {
                     alert(config.words[config.index][CHAPTER_COLUMN]);            

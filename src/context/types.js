@@ -15,5 +15,5 @@ export const STATE_SET_WORD = 2;
 
 
 // config const
-export const INIT_LIMIT = 3000;
+export const INIT_LIMIT = 2000;
 export const INIT_MEANLIMIT = 600;
