@@ -142,7 +142,7 @@ export default function Words(props) {
             </div>
         </div>
         <ButtonFrame className="bottom center">
-            <button onClick={check(true)} style={{color: 'rgb(0,255,0)'}}>정답</button>
+            <button onClick={check(true)} style={{color: 'rgb(0,200,0)'}}>정답</button>
             <button onClick={check(false)} style={{color: 'rgb(255, 50, 50)'}}>오답</button>
         </ButtonFrame>
         <ButtonFrame className="top left">        
