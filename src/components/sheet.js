@@ -20,7 +20,7 @@ export default function Sheet(props) {
                 <tbody>
                     {
                         config.words.map(row => {
-                            let result = []
+                            let result = [];
                             const checks = row[CHECK_COLUMN].split(',');
                             const words = row[WORD_COLUMN].split(',');
                             const means = row[CHAPTER_COLUMN].split('|');
@@ -59,7 +59,7 @@ export default function Sheet(props) {
                             // 단어가 여러개면 길어짐
                             for (let i=1; i < words.length; i++) {
                                 result.push(<tr>
-                                    <td className={checks[0] == 'TRUE' ? 'others checked':'others'} onClick={touchEffect(i)}>{words[i]}</td>
+                                    <td className={checks[i].trim() == 'TRUE' ? 'others checked':'others'} onClick={touchEffect(i)}>{words[i]}</td>
                                 </tr>)
                             }
                             return result
