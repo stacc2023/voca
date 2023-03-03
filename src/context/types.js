@@ -11,7 +11,8 @@ export const CHECK_FALSE = 'FALSE';
 // test state
 export const STATE_IDLE = 0;
 export const STATE_SET_SHEET = 1;
-export const STATE_SET_WORD = 2;
+export const STATE_PLAY_CARD = 2;
+export const STATE_PLAY_SHEET = 3;
 
 
 // config const

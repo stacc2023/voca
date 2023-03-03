@@ -17,6 +17,8 @@ const initConfig = {
     merge: false,
     speachLimit: false,
     repeatSort: false,
+    // 시트 모드에서, 비활성화 시 단어를 터치했을 때 그냥 세부 뜻을 보여줌. 활성화 시 초록색으로 체크가 됨
+    touchSheet: false,
     index: 0,
     cursor: WORD_COLUMN,
     stop: false,

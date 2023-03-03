@@ -5,6 +5,7 @@ export default function Form({ children }) {
         <table className={styles.form}>
             <tbody>
                 {children.map(child => {
+                    if (!child) return null;
                     return (
                         <tr key={child.props.id}>
                             <td>
