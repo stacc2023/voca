@@ -63,8 +63,8 @@ export default function Card(props) {
             dispatch({
                 type: 'update',
                 value: {
-                    limit: audio.duration * 1000,
-                    meanLimit: config.speach ? audio.duration * 1000 : config.meanLimit,
+                    limit: audio.duration,
+                    meanLimit: config.speach ? audio.duration : config.meanLimit,
                     stop: false,
                 }
             })
@@ -101,7 +101,62 @@ export default function Card(props) {
     const forward = e => {
         dispatch({ type: 'next', force: true });
     }
+    let block = false;
+    const save = e => {
+        e.target.disabled=true;
+        dispatch({
+            type: 'update',
+            value: {
+                stop: true,
+            }
+        });
+        fetch('/erase', {
+            method: 'POST',
+            body: JSON.stringify(config),
+        }).then(res => res.json()).then(result => {
+            dispatch({
+                type: 'update',
+                value: {
+                    stop: true,
+                }
+            });
+            e.target.disabled=false;
+        });
+    }
 
+
+    useEffect(() => {
+        const put = (e) => {
+            switch (e.code) {
+                case 'ArrowLeft' :
+                    check(true)(e);
+                    return;
+                case 'ArrowRight' :
+                    check(false)(e);
+                    return;
+                case 'ArrowUp' :
+                    forward(e);
+                    return;
+                case 'ArrowDown' :
+                    backward(e);
+                    return;
+                case 'Space' :
+                    dispatch({
+                        type: 'update',
+                        value: {
+                            stop: !config.stop,
+                        }
+                    });
+                    return;
+            }   
+        }
+
+        window.addEventListener('keydown', put);
+        return () => {
+            window.removeEventListener('keydown', put);
+        }
+
+    }, [config.index, config.cursor, config.stop])
 
     /**
      * ****************************** ui ******************************
@@ -109,26 +164,29 @@ export default function Card(props) {
 
 
     return (<div className="test">
-        <Bar 
-            key={'' + config.index + config.cursor + 'dur' + config.limit} 
-            max={config.cursor == MEAN_COLUMN ? config.meanLimit : config.limit} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
-            stop={config.stop}
-            callback={() => {
-                // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
-                if (config.cursor == MEAN_COLUMN) {
-                    dispatch({ type: 'next' })
-                // 영어 페이지인 경우, check(false)
-                } else {
-                    check(false)();
-                }
+        {/* {config.limit ? */}
+            <Bar 
+                key={'' + config.index + config.cursor + 'dur' + config.limit * 1000} 
+                max={config.cursor == MEAN_COLUMN ? config.meanLimit * 1000 : config.limit * 1000} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
+                stop={config.stop}
+                callback={() => {
+                    // 뜻 페이지인 경우, 마지막 단어 또는 반복 단어가 아니라면 다음 단어로
+                    if (config.cursor == MEAN_COLUMN) {
+                        dispatch({ type: 'next' })
+                    // 영어 페이지인 경우, check(false)
+                    } else {
+                        check(false)();
+                    }
             }} />
+        {/* : null } */}
         <WordBar key={'' + config.index + config.cursor + 'bar'} />
         <div className='arrow'>
-            <button onClick={backward} >{'<'}</button>
-            <button onClick={forward} >{'>'}</button>
+            <button onClick={backward} style={{zIndex: '1'}} >{'<'}</button>
+            <button onClick={forward} style={{zIndex: '1'}}>{'>'}</button>
         </div>
         <div className="content">      
             <div 
+                key={'' + config.index + config.cursor + 'word'} 
                 className='word' 
                 style={{
                     color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red',
@@ -167,27 +225,7 @@ export default function Card(props) {
                     }
                 });
             }}>{config.stop ? '시작' : '정지'}</button>
-            <button disabled={config.merge} onClick={e => {
-                e.target.disabled=true;
-                dispatch({
-                    type: 'update',
-                    value: {
-                        stop: true,
-                    }
-                });
-                fetch('/erase', {
-                    method: 'POST',
-                    body: JSON.stringify(config),
-                }).then(res => res.json()).then(result => {
-                    dispatch({
-                        type: 'update',
-                        value: {
-                            stop: true,
-                        }
-                    });
-                    e.target.disabled=false;
-                });
-            }}>저장</button>
+            <button disabled={config.merge} onClick={save}>저장</button>
             <button onClick={e => {
                 window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 dispatch({

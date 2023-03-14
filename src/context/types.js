@@ -16,5 +16,5 @@ export const STATE_PLAY_SHEET = 3;
 
 
 // config const
-export const INIT_LIMIT = 2000;
-export const INIT_MEANLIMIT = 600;
+export const INIT_LIMIT = 3;
+export const INIT_MEANLIMIT = 0.6;
