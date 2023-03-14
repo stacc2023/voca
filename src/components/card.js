@@ -101,9 +101,22 @@ export default function Card(props) {
     const forward = e => {
         dispatch({ type: 'next', force: true });
     }
+    const stop = e => {
+        dispatch({
+            type: 'update',
+            value: {
+                stop: !config.stop,
+            }
+        });
+    }
     let block = false;
     const save = e => {
-        e.target.disabled=true;
+        if (e.currentTarget === window) {
+            if (block) return;
+            block = true;
+        } else {
+            e.target.disabled=true;
+        }
         dispatch({
             type: 'update',
             value: {
@@ -117,10 +130,33 @@ export default function Card(props) {
             dispatch({
                 type: 'update',
                 value: {
-                    stop: true,
+                    stop: false,
                 }
             });
-            e.target.disabled=false;
+            if (e.currentTarget === window) {
+                block = false;
+            } else {
+                e.target.disabled=false;
+            }
+        });
+    }
+    const exit = e => {
+        window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        dispatch({
+            type: 'update',
+            value: {
+                state: STATE_SET_SHEET,
+                limit: config.speachLimit ? INIT_LIMIT : config.limit,
+                meanLimit: config.speachLimit ? INIT_MEANLIMIT : config.meanLimit,
+            }
+        });
+    }
+    const changeLang = e => {
+        dispatch({
+            type: 'update',
+            value: {
+                uk: !config.uk,
+            }
         });
     }
 
@@ -128,25 +164,26 @@ export default function Card(props) {
     useEffect(() => {
         const put = (e) => {
             switch (e.code) {
-                case 'ArrowLeft' :
+                case 'ArrowUp' :
                     check(true)(e);
                     return;
-                case 'ArrowRight' :
+                case 'ArrowDown' :
                     check(false)(e);
                     return;
-                case 'ArrowUp' :
+                case 'ArrowRight' :
                     forward(e);
                     return;
-                case 'ArrowDown' :
+                case 'ArrowLeft' :
                     backward(e);
                     return;
                 case 'Space' :
-                    dispatch({
-                        type: 'update',
-                        value: {
-                            stop: !config.stop,
-                        }
-                    });
+                    stop(e);
+                    return;
+                case 'Enter' :
+                    save(e);
+                    return;
+                case 'Escape' :
+                    exit(e);
                     return;
             }   
         }
@@ -190,7 +227,6 @@ export default function Card(props) {
                 className='word' 
                 style={{
                     color: config.words[config.index][CHECK_COLUMN] == 'TRUE' ? 'green' : 'red',
-                    // textShadow: '-1px 0 #fff, 0 1px #fff, 1px 0 #fff, 0 -1px #fff',
                 }}
                 onClick={e => {
                     alert(config.words[config.index][CHAPTER_COLUMN]);            
@@ -204,39 +240,12 @@ export default function Card(props) {
             <button onClick={check(false)} style={{color: 'rgb(255, 50, 50)'}}>오답</button>
         </ButtonFrame>
         <ButtonFrame className="top left">        
-            <button onClick={e => {
-                    dispatch({
-                        type: 'update',
-                        value: {
-                            uk: !config.uk,
-                        }
-                    });
-                }} style={{
-                    paddingLeft: '5px',
-                    paddingRight: '5px',
-            }}>{config.uk ? '영국' : '미국'}</button>
+            <button onClick={changeLang} style={{ paddingLeft: '5px', paddingRight: '5px', }}>{config.uk ? '영국' : '미국'}</button>
         </ButtonFrame>
         <ButtonFrame className="top right">
-            <button onClick={e => {
-                dispatch({
-                    type: 'update',
-                    value: {
-                        stop: !config.stop,
-                    }
-                });
-            }}>{config.stop ? '시작' : '정지'}</button>
+            <button onClick={stop}>{config.stop ? '시작' : '정지'}</button>
             <button disabled={config.merge} onClick={save}>저장</button>
-            <button onClick={e => {
-                window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                dispatch({
-                    type: 'update',
-                    value: {
-                        state: STATE_SET_SHEET,
-                        limit: config.speachLimit ? INIT_LIMIT : config.limit,
-                        meanLimit: config.speachLimit ? INIT_MEANLIMIT : config.meanLimit,
-                    }
-                });
-            }}>종료</button>
+            <button onClick={exit}>종료</button>
         </ButtonFrame>
     </div>)
 
