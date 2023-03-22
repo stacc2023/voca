@@ -104,6 +104,7 @@ export default function Config() {
                     /**
                      * start end 값에 따라 오류 발생
                      */
+                    if (!confirm('초기화 하시겠습니까?')) return;
                     e.target.disabled = true;
                     fetch('/reset', {
                         method: 'POST',

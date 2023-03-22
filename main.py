@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from sheet import check, update, reset, sheets
+from sheet import check, update, reset, sheets, get_log
 from speach import check_voice
 import json
 
@@ -35,6 +35,10 @@ def speach() :
     data = json.loads(request.get_data())
     # return tts(data['word'], data['code'])
     return check_voice(data)
+
+@app.route('/log')
+def log() :
+    return get_log()
 
 
 if __name__ == '__main__':
