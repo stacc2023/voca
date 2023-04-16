@@ -1,10 +1,12 @@
 import { useEffect, useContext } from 'react';
-import { CHAPTER_COLUMN, CHECK_COLUMN, INIT_LIMIT, INIT_MEANLIMIT, MEAN_COLUMN, STATE_SET_SHEET, WORD_COLUMN } from '../context/types';
+import { CHAPTER_COLUMN, CHECK_COLUMN, INIT_LIMIT, INIT_MEANLIMIT, MEAN_COLUMN, STATE_SET_SHEET, WORD_COLUMN, CHECK_TRUE } from '../context/types';
 import './test.scss';
 import { ConfigContext } from '../context';
 import Bar from '../gui/bar';
 import WordBar from '../gui/word-bar';
 import ButtonFrame from '../gui/button';
+import Latex from '../gui/latex';
+import Time from '../gui/time';
 
 export default function Card(props) {
     const { config, dispatch } = useContext(ConfigContext);
@@ -28,7 +30,7 @@ export default function Card(props) {
 
     // 인덱스나 커서가 변경 된 경우 불러오기
     async function tts() {
-        if (!config.speach && config.cursor == MEAN_COLUMN) return;
+        if (config.cursor == MEAN_COLUMN) return;
         await window.audioContext.resume();
         
         // 오디오 기준의 시간제한
@@ -37,7 +39,6 @@ export default function Card(props) {
                 type: 'update',
                 value: {
                     limit: 1000000,
-                    meanLimit: config.speach ? 1000000: config.meanLimit,
                     stop: true,
                 }
             });
@@ -64,7 +65,6 @@ export default function Card(props) {
                 type: 'update',
                 value: {
                     limit: audio.duration,
-                    meanLimit: config.speach ? audio.duration : config.meanLimit,
                     stop: false,
                 }
             })
@@ -89,16 +89,20 @@ export default function Card(props) {
      */
 
     const check = answer => e => {
+        const prev = config.words[config.index][CHECK_COLUMN] == CHECK_TRUE ? true : false;
         dispatch({
             type: 'check',
             answer,
         })
-        // setConfig(config => {return { ...config, cursor: MEAN_COLUMN, stop:false }});
+        if (config.cursor == MEAN_COLUMN && prev == answer) {
+            dispatch({ type: 'next' });
+        }
     }
     const backward = (e) => {
         dispatch({ type: 'prev' });
     }
     const forward = e => {
+        // force: 구간반복 옵션을 무시하고 다음 단어로
         dispatch({ type: 'next', force: true });
     }
     const stop = e => {
@@ -147,7 +151,6 @@ export default function Card(props) {
             value: {
                 state: STATE_SET_SHEET,
                 limit: config.speachLimit ? INIT_LIMIT : config.limit,
-                meanLimit: config.speachLimit ? INIT_MEANLIMIT : config.meanLimit,
             }
         });
     }
@@ -201,7 +204,8 @@ export default function Card(props) {
 
 
     return (<div className="test">
-        {/* {config.limit ? */}
+        <Time stop={config.stop} />
+        {/* {config.cursor == WORD_COLUMN ? */}
             <Bar 
                 key={'' + config.index + config.cursor + 'dur' + config.limit * 1000} 
                 max={config.cursor == MEAN_COLUMN ? config.meanLimit * 1000 : config.limit * 1000} // 단어는 limit만큼, 뜻은 1초만큼 보여주고 다음 페이지로 넘어감
@@ -232,7 +236,7 @@ export default function Card(props) {
                     alert(config.words[config.index][CHAPTER_COLUMN]);            
                     window.audioContext.resume();
                 }}>
-                {config.words[config.index][config.cursor]}
+                {config.latex ? <Latex tex={config.words[config.index][config.cursor]} /> : config.words[config.index][config.cursor]}
             </div>
         </div>
         <ButtonFrame className="bottom center">

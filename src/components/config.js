@@ -89,13 +89,13 @@ export default function Config() {
                 <input id="end" type="number" name="끝" value={end} placeholder="MAX" onChange={e => setEnd(e.target.value)} />
                 <input id="repeat" type="number" name="반복 단위" placeholder="반복없음" value={config.repeat} onChange={e => dispatch({type: 'update', value: { repeat: e.target.value }})} />
                 <input id="word-limit" type="number" name="단어 제한시간" disabled={config.speachLimit} value={config.speachLimit ? '' : config.limit} onChange={e => dispatch({type: 'update', value: { limit: e.target.value }})} />
-                <input id="mean-limit" type="number" name="뜻 제한시간" disabled={config.speachLimit && config.speach} value={config.speachLimit && config.speach ? '' : config.meanLimit} onChange={e => dispatch({type: 'update', value: { meanLimit: e.target.value }})} />
+                <input id="mean-limit" type="number" name="뜻 제한시간" value={config.meanLimit} onChange={e => dispatch({type: 'update', value: { meanLimit: e.target.value }})} />
                 <input id="erase" type="checkbox" name="외운 단어 제외" checked={config.erase} onChange={e => dispatch({type: 'update', value: { erase: e.target.checked }})} />
                 <input id="sort" type="checkbox" name="무작위" checked={config.sort} onChange={e => dispatch({type: 'update', value: { sort: e.target.checked }})} />
-                <input id="mean-speach" type="checkbox" name="뜻 음성" checked={config.speach} onChange={e => dispatch({type: 'update', value: { speach: e.target.checked }})} />
                 <input id="merge" type="checkbox" name="동의어 합치기" checked={config.merge} onChange={e => dispatch({type: 'update', value: { merge: e.target.checked, touchSheet: e.target.checked ? false : config.touchSheet }})} />
                 <input id="speach-limit" type="checkbox" name="음성 기반 제한시간" checked={config.speachLimit} onChange={e => dispatch({type: 'update', value: { speachLimit: e.target.checked }})} />
                 <input id="touch" type="checkbox" name="(시트)터치하여 체크" disabled={config.merge} checked={config.touchSheet} onChange={e => dispatch({type: 'update', value: { touchSheet: e.target.checked }})} />
+                <input id="latex" type="checkbox" name="수식" checked={config.latex} onChange={e => dispatch({type: 'update', value: { latex: e.target.checked }})} />
             </Form>
             <ButtonFrame className="right bottom">
                 <button onClick={startTest('sheet')}>시트</button>
