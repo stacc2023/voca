@@ -1,18 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { ConfigContext } from "../context";
 
 export default function Time(props) {
-    const [start, setStart] = useState(Date.now());
-    const [cur, setCur] = useState(Date.now());
+    const { config } = useContext(ConfigContext);
+    const [start, setStart] = useState(!config.timeConfig ? Date.now() : config.timeConfig.start);
+    const [end, setEnd] = useState(!config.timeConfig ? Date.now() : config.timeConfig.end);
+
+    if (!config.timeConfig) config.timeConfig = {start: start, end: end};
 
     useEffect(() => {
         if (!props.stop) {
-            requestAnimationFrame(() => setCur(Date.now()));
+            config.timeConfig.end = Date.now();
+            requestAnimationFrame(() => setEnd(config.timeConfig.end));
         }
     });
 
     useEffect(() => {
-        setStart(start + Date.now() - cur);
+        config.timeConfig.start = start + Date.now() - end;
+        setStart(config.timeConfig.start);
     }, [props.stop]);
 
-    return <div>{new Date(cur - start).toISOString().slice(11, -1)}</div>
+    return <div>{new Date(end - start).toISOString().slice(11, -1)}</div>
 }

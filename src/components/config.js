@@ -118,6 +118,7 @@ export default function Config() {
                         type: 'update',
                         value: {
                             state: STATE_PLAY_CARD,
+                            stop: false,
                         }
                     })
                 }}>불러오기</button>
