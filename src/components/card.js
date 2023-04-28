@@ -11,6 +11,19 @@ import Time from '../gui/time';
 export default function Card(props) {
     const { config, dispatch } = useContext(ConfigContext);
 
+    const preventMistake = (e) => {
+        e.preventDefault();
+        e.returnValue = "창을 닫으시겠습니까?";
+    }
+
+    useEffect(() => {
+    
+        window.addEventListener('beforeunload', preventMistake);
+        return () => {
+            window.removeEventListener('beforeunload', preventMistake);
+        }
+    })
+
     /**
      * ****************************** TTS ******************************
      */
